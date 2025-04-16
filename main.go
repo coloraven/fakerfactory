@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"io"
@@ -12,28 +13,36 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/mark3labs/mcp-go/server"
 	"github.com/toddlerya/fakerfactory/faker"
 )
 
+var mode string
 var port string
 var dbPath string
 var Conn *sql.DB
 
 func init() {
 	if len(os.Args) > 1 {
-
-		port = os.Args[1]
+		mode = os.Args[1]
+	} else {
+		mode = "server"
+	}
+	if len(os.Args) > 2 {
+		port = os.Args[2]
 	} else {
 		port = "8001"
 	}
-	if len(os.Args) > 2 {
-		dbPath = os.Args[2]
+	if len(os.Args) > 3 {
+		dbPath = os.Args[3]
 	} else {
 		dbPath = `./data/data.db`
 	}
 	fmt.Println("args==>", os.Args)
 	fmt.Println("args[1]==>", os.Args[1])
 	fmt.Println("args[2]==>", os.Args[2])
+	fmt.Println("args[3]==>", os.Args[3])
 	Conn = faker.CreateConn(dbPath)
 }
 
@@ -177,7 +186,7 @@ func matchFaker(col string, c *sql.DB) interface{} {
 		return faker.Imei()
 	case "meid": // 随机大小写
 		return faker.RandMeid()
-	case "deviceid": //采集设备ID、固定21位、前9位为安全厂商ID（如FIBERHOME），后12位为采集设备MAC，规则同MAC、所有字母大写
+	case "deviceid": //采集设备ID、固定21位、前9位为安全厂商ID(如FIBERHOME)，后12位为采集设备MAC，规则同MAC、所有字母大写
 		return faker.DeviceID()
 	case "date": // 数据库日期格式{YYYYMMDD,hh:mm:ss}  (当前时间)
 		return faker.NowDate()
@@ -197,7 +206,117 @@ func matchFaker(col string, c *sql.DB) interface{} {
 	}
 }
 
+func StartMCPServer() {
+	// TODO MCP服务
+	fmt.Println("MCP服务启动...")
+	// Create a new MCP server
+	s := server.NewMCPServer(
+		"fakerfactory",
+		"1.0.0",
+		server.WithResourceCapabilities(true, true),
+		server.WithLogging(),
+		server.WithRecovery(),
+	)
+
+	// Add a faker data tool
+	fakerTool := mcp.NewTool("fakerfactory",
+		mcp.WithDescription("生成仿真测试数据"),
+		mcp.WithString("columns",
+			mcp.Required(),
+			mcp.Description(`需要生成的仿真数据字段参数, 用英文逗号分隔
+目前已经支持的数据类型(即columns字段的可选参数)
+| 序号   |      参数      | 说明                                    |
+| :--- | :----------: | ------------------------------------- |
+| 1    |    color     | 颜色                                    |
+| 2    |     job      | 职业                                    |
+| 3    |     name     | 中文名字                                  |
+| 4    |     sex      | 性别                                    |
+| 5    |   address    | 地址信息(地区编号、邮编、固话区号、省市信息、社区名称、社区简称、经纬度) |
+| 6    |    idcard    | 大陆居民身份证号码                             |
+| 7    |     age      | 年龄                                    |
+| 8    | mobilephone  | 移动电话号码                                |
+| 9    |    email     | 电子邮箱                                  |
+| 10   |     imid     | IM类型的用户ID                             |
+| 11   |   nickname   | 用户昵称                                  |
+| 12   |   username   | 用户名                                   |
+| 13   |   password   | 用户密码                                  |
+| 14   |   website    | 网站地址                                  |
+| 15   |     url      | 网址URL(随机http或https)                   |
+| 16   |   airport    | 国内机场信息(IATA编码、城市名称、ICAO编码、机场名称、城市拼音)  |
+| 17   |    voyage    | 国内航班号                                 |
+| 18   | airlineinfo  | 国内航空公司信息(代号、中文名称)                     |
+| 19   |  traintrips  | 火车班次(覆盖高铁、动车、特快、普快、城际、旅游专线)           |
+| 20   |  trainseat   | 火车座号                                  |
+| 22   |  flightseat  | 飞机座号                                  |
+| 23   |     ipv4     | ipv4的点分型IP地址                          |
+| 24   |     ipv6     | ipv6的点分型IP地址                          |
+| 25   |     mac      | mac地址(随机大小写，分隔符)                      |
+| 26   |  useragent   | 浏览器请求头                                |
+| 27   |     imsi     | IMSI(目前只支持国内460开头的)                   |
+| 28   |     imei     | IMEI(目前支持中国、英国、美国)                    |
+| 29   |     meid     | MEID(随机大小写)                           |
+| 30   |   deviceid   | DEVICEID(设备编号)                        |
+| 31   |   telphone   | 固定电话(暂时只支持国内号码)                       |
+| 32   |   citycode   | 国内长途区号                                |
+| 33   | specialphone | 特殊电话号码(比如10086、110)                   |
+| 34   | capturetime  | 当前时间绝对秒(10位数字)                        |
+| 35   |     date     | 当前时间，数据库日期格式{YYYYMMDD,hh:mm:ss}       |
+| 36   |   carbrand   | 汽车品牌(中文)       |`),
+			mcp.Enum("color", "job", "name", "sex", "address", "idcard", "age", "mobilephone", "email", "imid", "nickname", "username", "password", "website", "url", "airport", "voyage", "airlineinfo", "traintrips", "trainseat", "flightseat", "ipv4", "ipv6", "useragent", "mac", "imsi", "imei", "meid", "deviceid", "telphone", "citycode", "specialphone", "capturetime", "date", "carbrand"),
+		),
+		mcp.WithNumber("number",
+			mcp.Required(),
+			mcp.Description("需要生成的数据条数"),
+		),
+	)
+
+	// Add the fakerfactory handler
+	s.AddTool(fakerTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		columns := request.Params.Arguments["columns"].(string)
+		number := request.Params.Arguments["number"].(string)
+
+		result, count := fakerData(columns, number)
+
+		return mcp.NewToolResultText(fmt.Sprintf("生成数据条数: %d\n生成数据内容: %v", count, result)), nil
+	})
+
+	// Static resource example - exposing a README file
+	resource := mcp.NewResource(
+		"docs://readme",
+		"Project README",
+		mcp.WithResourceDescription("The project's README file"),
+		mcp.WithMIMEType("text/markdown"),
+	)
+
+	// Add resource with its handler
+	s.AddResource(resource, func(ctx context.Context, request mcp.ReadResourceRequest) ([]mcp.ResourceContents, error) {
+		content, err := os.ReadFile("MCP_DOCS.md")
+		if err != nil {
+			return nil, err
+		}
+
+		return []mcp.ResourceContents{
+			mcp.TextResourceContents{
+				URI:      "docs://readme",
+				MIMEType: "text/markdown",
+				Text:     string(content),
+			},
+		}, nil
+	})
+
+	// Start the server
+	if err := server.ServeStdio(s); err != nil {
+		fmt.Printf("Server error: %v\n", err)
+	}
+}
+
 func main() {
-	StartServer()
+	if mode == "server" {
+		fmt.Println("API服务模式")
+		StartServer()
+	} else if mode == "mcp" {
+		fmt.Println("MCP服务模式")
+		StartMCPServer()
+	}
 	defer Conn.Close()
 }

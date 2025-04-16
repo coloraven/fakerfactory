@@ -62,7 +62,7 @@
 #### http get请求
 http://{IP}:8001/api/v1/fakerfactory?number={条数}&columns={字段参数[多个字段以英文逗号分隔]}
 
-#### [小试一下](http://172.16.5.43:8001/api/v1/fakerfactory?number=1&columns=color,job,name,sex,address,idcard,age,mobilephone,email,imid,nickname,username,password,website,url,airport,voyage,airlineinfo,traintrips,trainseat,flightseat,ipv4,ipv6,useragent,mac,imsi,imei,meid,deviceid,telphone,citycode,specialphone,capturetime,date)
+#### [小试一下](http://172.16.5.43:8001/api/v1/fakerfactory?number=1&columns=color,job,name,sex,address,idcard,age,mobilephone,email,imid,nickname,username,password,website,url,airport,voyage,airlineinfo,traintrips,trainseat,flightseat,ipv4,ipv6,useragent,mac,imsi,imei,meid,deviceid,telphone,citycode,specialphone,capturetime,date,carbrand)
 
 ## 使用效果
 
@@ -93,7 +93,7 @@ http://{IP}:8001/api/v1/fakerfactory?number={条数}&columns={字段参数[多�
 
   - 模拟构造API请求随机生成10000000（1000 x 10000）条数据，耗时278.518秒。
   - 生成数据总量约7.28 GB（7821829529 bytes）
-  - 吞吐率（Requests per second）： 35.90 
+  - 吞吐率（Requests per second）： 35.90
   - 用户平均请求等待时间（Time per request）：557.037 ms
   - 服务器平均请求处理时间（Time per request，across all concurrent requests）：27.852 ms
   - 90%的请求耗时低于662 ms
