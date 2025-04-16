@@ -92,7 +92,7 @@ func QuerySqlite(conn *sql.DB, querySql string, args ...interface{}) ([]map[stri
 func CreateConn(dbPath string) *sql.DB {
 	Conn, err := ConnectSqlite(dbPath)
 	if err != nil {
-		fmt.Println("连接SQLite错误!!!")
+		fmt.Printf("连接SQLite错误! dbPath: %s error: %v", dbPath, err)
 		defer Conn.Close()
 		panic(err)
 	}

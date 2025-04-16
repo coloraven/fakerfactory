@@ -15,5 +15,8 @@
 
 # log
 bin/*.log
+*.log
+
 
 .DS_Store
+

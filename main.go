@@ -15,9 +15,27 @@ import (
 	"github.com/toddlerya/fakerfactory/faker"
 )
 
-var port = "8001"
-var dbPath string = `./data/data.db`
-var Conn *sql.DB = faker.CreateConn(dbPath) // 不应该在这里建立连接, 每次请求都会建立连接, 资源消耗比较多, 后续改进
+var port string
+var dbPath string
+var Conn *sql.DB
+
+func init() {
+	if len(os.Args) > 1 {
+
+		port = os.Args[1]
+	} else {
+		port = "8001"
+	}
+	if len(os.Args) > 2 {
+		dbPath = os.Args[2]
+	} else {
+		dbPath = `./data/data.db`
+	}
+	fmt.Println("args==>", os.Args)
+	fmt.Println("args[1]==>", os.Args[1])
+	fmt.Println("args[2]==>", os.Args[2])
+	Conn = faker.CreateConn(dbPath)
+}
 
 func StartServer() {
 	// Disable Console Color, you don't need console color when writing the logs to file.
@@ -38,7 +56,7 @@ func StartServer() {
 		v1.GET("/fakerfactory", GetFaker)
 	}
 	err := router.Run(fmt.Sprintf(":%s", port))
-	if err != nil{
+	if err != nil {
 		log.Fatalf("在%s端口启动服务失败！", port)
 	}
 }
@@ -175,7 +193,7 @@ func matchFaker(col string, c *sql.DB) interface{} {
 		return "暂未支持"
 
 	default:
-		return "未知字段, 请检查输入参数"
+		return "暂未支持的字段"
 	}
 }
 
