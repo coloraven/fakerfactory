@@ -114,9 +114,26 @@ http://{IP}:8001/api/v1/fakerfactory?number={条数}&columns={字段参数[多�
 
     ![](media/网络情况.png)
 
+## 安装
 ### 环境依赖
 - 开发环境：go1.9以上
 - 运行环境：直接使用发布的二进制文件即可
+
+### 自行编译
+#### 非交叉编译
+```bash
+go build -o app.exe -ldflags "-s -w" main.go
+```
+
+#### 交叉编译windows可运行的二进制文件
+```bash
+sudo apt install mingw-w64
+CGO_ENABLED=1 \
+CC=x86_64-w64-mingw32-gcc \
+GOOS=windows \
+GOARCH=amd64 \
+go build -o app.exe -ldflags "-s -w" main.go
+```
 
 ## 鸣谢
 - [gofakeit](https://github.com/brianvoe/gofakeit) Random fake data generator written in go.
