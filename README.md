@@ -62,7 +62,7 @@
 #### http get请求
 http://{IP}:8001/api/v1/fakerfactory?number={条数}&columns={字段参数[多个字段以英文逗号分隔]}
 
-#### [小试一下](http://172.16.5.43:8001/api/v1/fakerfactory?number=1&columns=color,job,name,sex,address,idcard,age,mobilephone,email,imid,nickname,username,password,website,url,airport,voyage,airlineinfo,traintrips,trainseat,flightseat,ipv4,ipv6,useragent,mac,imsi,imei,meid,deviceid,telphone,citycode,specialphone,capturetime,date)
+<!-- #### [小试一下](http://127.0.0.1:8001/api/v1/fakerfactory?number=1&columns=color,job,name,sex,address,idcard,age,mobilephone,email,imid,nickname,username,password,website,url,airport,voyage,airlineinfo,traintrips,trainseat,flightseat,ipv4,ipv6,useragent,mac,imsi,imei,meid,deviceid,telphone,citycode,specialphone,capturetime,date) -->
 
 ## 使用效果
 
@@ -119,7 +119,7 @@ http://{IP}:8001/api/v1/fakerfactory?number={条数}&columns={字段参数[多�
 - 开发环境：go1.9以上
 - 运行环境：直接使用发布的二进制文件即可
 
-### 自行编译
+### 自行编译[使用`GitHub` `CodeSpace`]
 #### 非交叉编译
 ```bash
 go build -o app.exe -ldflags "-s -w" main.go
@@ -127,13 +127,25 @@ go build -o app.exe -ldflags "-s -w" main.go
 
 #### 交叉编译windows可运行的二进制文件
 ```bash
-sudo apt install mingw-w64
-CGO_ENABLED=1 \
+sudo apt update && sudo apt install -y mingw-w64 \
+&& CGO_ENABLED=1 \
 CC=x86_64-w64-mingw32-gcc \
 GOOS=windows \
 GOARCH=amd64 \
-go build -o app.exe -ldflags "-s -w" main.go
+go build -o FakeAPI.exe -ldflags "-s -w" main.go
 ```
+#### 测试
+##### 启动
+```cmd
+FakeAPI.exe 8001 ./data.db
+```
+##### 请求
+1. GET 
+  http://127.0.0.1:8001/api/v1/fakerfactory?number=1&columns=color,job,name,sex,address,idcard,age,mobilephone,email,imid,nickname,username,password,website,url,airport,voyage,airlineinfo,traintrips,trainseat,flightseat,ipv4,ipv6,useragent,mac,imsi,imei,meid,deviceid,telphone,citycode,specialphone,capturetime,date
+2. POST
+  ```cmd
+  curl -X POST http://localhost:8001/api/v1/fakerfactory -H "Content-Type: application/json" -d "{\"columns\":\"name,age,idcard,nickname,telphone,citycode\",\"number\":\"3\"}"
+  ```
 
 ## 鸣谢
 - [gofakeit](https://github.com/brianvoe/gofakeit) Random fake data generator written in go.

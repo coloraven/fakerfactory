@@ -19,6 +19,7 @@ var port string
 var dbPath string
 var Conn *sql.DB
 
+
 func init() {
 	if len(os.Args) > 1 {
 
@@ -54,11 +55,44 @@ func StartServer() {
 	v1 := router.Group("api/v1")
 	{
 		v1.GET("/fakerfactory", GetFaker)
+		v1.POST("/fakerfactory", PostFaker) // 添加这一行
 	}
 	err := router.Run(fmt.Sprintf(":%s", port))
 	if err != nil {
 		log.Fatalf("在%s端口启动服务失败！", port)
 	}
+}
+
+func PostFaker(c *gin.Context) {
+	// 定义接收结构体
+	type RequestBody struct {
+		Columns string `json:"columns" binding:"required"`
+		Number  string `json:"number" binding:"required"`
+	}
+
+	var req RequestBody
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": gin.H{
+				"status": "error",
+				"code":   "100"},
+			"data": gin.H{
+				"count":   nil,
+				"records": "请输入有效的参数"},
+		})
+		return
+	}
+
+	records, count := fakerData(req.Columns, req.Number)
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": gin.H{
+			"status": "ok",
+			"code":   "0"},
+		"data": gin.H{
+			"count":   count,
+			"records": records},
+	})
 }
 
 func GetFaker(c *gin.Context) {
